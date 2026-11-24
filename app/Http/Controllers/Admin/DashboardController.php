@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\User;
+use App\Services\DataAnalitikPengguna;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
@@ -15,7 +16,7 @@ class DashboardController extends Controller
     // Banyak entri audit log terbaru yang ditampilkan per peran.
     private const JUMLAH_LOG = 5;
 
-    public function index(): Response
+    public function index(DataAnalitikPengguna $analitik): Response
     {
         // Aktif hari ini = siswa yang login sejak pukul 00.00 WIB. Database menyimpan waktu dalam UTC.
         $awalHariIni = CarbonImmutable::now('Asia/Jakarta')->startOfDay()->utc();
@@ -26,6 +27,8 @@ class DashboardController extends Controller
             'jumlahEditor' => User::where('role', 'admin_editor')->count(),
             'auditLogAdmin' => $this->logTerbaru('admin'),
             'auditLogEditor' => $this->logTerbaru('admin_editor'),
+            // Pengguna & keaktifan: dari cache, diperbarui paling lambat setiap 15 menit.
+            'analitikPengguna' => $analitik->ambil(),
         ]);
     }
 

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AnalitikController as AdminAnalitikController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AdminEditor\EditorTryOutEditorController;
@@ -133,6 +134,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('admin')->middleware('peran:admin')->group(function () {
         // Dashboard Admin: jumlah siswa/editor, siswa aktif hari ini, audit log admin dan editor.
         Route::get('/', [DashboardController::class, 'index'])->name('admin.index');
+
+        // Analitik admin per tab (?bagian=belajar|tryout|battle|gamifikasi|operasional); hanya membaca data.
+        Route::get('/analitik', [AdminAnalitikController::class, 'index'])->name('admin.analitik');
 
         // Daftar User. whereUuid: id yang bukan UUID langsung 404, bukan error query Postgres.
         Route::prefix('users')->name('admin.user.')->group(function () {

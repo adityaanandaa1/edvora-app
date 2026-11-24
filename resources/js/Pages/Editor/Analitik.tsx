@@ -2,6 +2,7 @@ import { Head } from '@inertiajs/react';
 import { ReactNode } from 'react';
 import EditorLayout from '@/Components/Layouts/EditorLayout';
 import InfoTooltip from '@/Components/Editor/InfoTooltip';
+import AnalitikKualitas, { DataKualitas } from '@/Components/Editor/AnalitikKualitas';
 
 type Tingkat = 'mudah' | 'sedang' | 'sulit';
 
@@ -36,6 +37,7 @@ interface DataAnalitik {
 
 interface AnalitikProps {
     analitik: DataAnalitik | null; // null = data gagal dimuat (UCS9 2a)
+    kualitas: DataKualitas | null; // kualitas soal & penguasaan; null = gagal dimuat
 }
 
 const angka = (n: number) => n.toLocaleString('id-ID');
@@ -52,7 +54,7 @@ function warnaAkurasi(akurasi: number): string {
 }
 
 // Dashboard Analitik editor (desain "dashboard analitik", UCS9 Melihat Analitik Soal).
-export default function Analitik({ analitik }: AnalitikProps) {
+export default function Analitik({ analitik, kualitas }: AnalitikProps) {
     return (
         <EditorLayout breadcrumb={['Dashboard Analitik']}>
             <Head title="Dashboard Analitik" />
@@ -69,6 +71,7 @@ export default function Analitik({ analitik }: AnalitikProps) {
             </div>
 
             {analitik ? <IsiAnalitik data={analitik} /> : <GagalDimuat />}
+            {kualitas && <AnalitikKualitas data={kualitas} />}
         </EditorLayout>
     );
 }

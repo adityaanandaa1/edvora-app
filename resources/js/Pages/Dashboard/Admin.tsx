@@ -1,3 +1,4 @@
+import AnalitikPengguna, { DataAnalitikPengguna } from '@/Components/Admin/AnalitikPengguna';
 import AdminLayout from '@/Components/Layouts/AdminLayout';
 import { formatWaktuWib } from '@/lib/waktu';
 import { Head } from '@inertiajs/react';
@@ -17,6 +18,7 @@ interface AdminProps {
     jumlahEditor: number;
     auditLogAdmin: LogItem[];
     auditLogEditor: LogItem[];
+    analitikPengguna: DataAnalitikPengguna;
 }
 
 // Kartu angka ringkasan; gaya kartu, huruf, dan bayangan sama dengan halaman siswa.
@@ -83,7 +85,7 @@ function PanelLog({ peran, log, kosong, urutan }: { peran: string; log: LogItem[
     );
 }
 
-export default function Admin({ totalSiswa, aktifHariIni, jumlahEditor, auditLogAdmin, auditLogEditor }: AdminProps) {
+export default function Admin({ totalSiswa, aktifHariIni, jumlahEditor, auditLogAdmin, auditLogEditor, analitikPengguna }: AdminProps) {
     return (
         <AdminLayout judul="Dashboard">
             <Head title="Dashboard Admin" />
@@ -114,9 +116,9 @@ export default function Admin({ totalSiswa, aktifHariIni, jumlahEditor, auditLog
                     />
                     <KartuAngka
                         urutan={1}
-                        label="Aktif Hari Ini"
+                        label="Login Hari Ini"
                         nilai={aktifHariIni}
-                        keterangan="Siswa aktif sejak 00.00 WIB"
+                        keterangan="Siswa yang login sejak 00.00 WIB"
                         warnaIkon="bg-siswa-ikon-tryout text-siswa-umpan-benar-teks"
                         ikon={
                             <>
@@ -141,6 +143,8 @@ export default function Admin({ totalSiswa, aktifHariIni, jumlahEditor, auditLog
                         }
                     />
                 </section>
+
+                <AnalitikPengguna data={analitikPengguna} />
 
                 {/* items-start: panel setinggi isinya, tidak ada ruang kosong besar di panel yang log-nya sedikit. */}
                 <section className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2" aria-label="Aktivitas Audit Log">
