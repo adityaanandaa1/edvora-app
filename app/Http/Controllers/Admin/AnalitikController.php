@@ -11,7 +11,7 @@ use Inertia\Response;
 use Throwable;
 
 /**
- * Halaman Analitik admin: satu tab per bagian (?bagian=belajar|tryout|battle|gamifikasi|operasional).
+ * Halaman Analitik admin: satu tab per bagian (?bagian=belajar|tryout|gamifikasi|operasional).
  * Hanya tab yang dibuka yang dihitung.
  */
 class AnalitikController extends Controller

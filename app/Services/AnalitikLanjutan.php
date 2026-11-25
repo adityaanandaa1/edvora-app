@@ -5,7 +5,7 @@ namespace App\Services;
 use Carbon\CarbonImmutable;
 
 /**
- * Fungsi murni untuk halaman Analitik admin (Belajar, Try Out, Battle, Gamifikasi, Operasional) dan bagian
+ * Fungsi murni untuk halaman Analitik admin (Belajar, Try Out, Gamifikasi, Operasional) dan bagian
  * Kualitas Soal & Penguasaan di analitik editor. Query-nya ada di DataAnalitikAdmin dan DataAnalitikKualitas.
  */
 class AnalitikLanjutan

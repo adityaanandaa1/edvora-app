@@ -1,5 +1,4 @@
 import { GagalDimuat } from '@/Components/Analitik/Bagian';
-import TabBattle, { DataBattle } from '@/Components/Admin/Analitik/TabBattle';
 import TabBelajar, { DataBelajar } from '@/Components/Admin/Analitik/TabBelajar';
 import TabGamifikasi, { DataGamifikasi } from '@/Components/Admin/Analitik/TabGamifikasi';
 import TabOperasional, { DataOperasional } from '@/Components/Admin/Analitik/TabOperasional';
@@ -8,18 +7,17 @@ import AdminLayout from '@/Components/Layouts/AdminLayout';
 import { formatWaktuWib } from '@/lib/waktu';
 import { Head, Link } from '@inertiajs/react';
 
-type Bagian = 'belajar' | 'tryout' | 'battle' | 'gamifikasi' | 'operasional';
+type Bagian = 'belajar' | 'tryout' | 'gamifikasi' | 'operasional';
 
 interface AnalitikProps {
     bagian: Bagian;
     // null = data gagal dimuat; bentuknya bergantung pada bagian.
-    data: (DataBelajar | DataTryOut | DataBattle | DataGamifikasi | DataOperasional) | null;
+    data: (DataBelajar | DataTryOut | DataGamifikasi | DataOperasional) | null;
 }
 
 const TAB: { kunci: Bagian; label: string; keterangan: string }[] = [
     { kunci: 'belajar', label: 'Belajar', keterangan: 'Sesi latihan, hint, dan jam belajar' },
     { kunci: 'tryout', label: 'Try Out', keterangan: 'Peserta, sebaran skor, dan subtes' },
-    { kunci: 'battle', label: 'Battle', keterangan: 'Jumlah, mode, dan kecepatan jawab' },
     { kunci: 'gamifikasi', label: 'Gamifikasi', keterangan: 'XP, point, level, avatar, dan badge' },
     { kunci: 'operasional', label: 'Operasional', keterangan: 'Akun dan aktivitas admin/editor' },
 ];
@@ -62,7 +60,6 @@ export default function Analitik({ bagian, data }: AnalitikProps) {
                         </p>
                         {bagian === 'belajar' && <TabBelajar data={data as DataBelajar} />}
                         {bagian === 'tryout' && <TabTryOut data={data as DataTryOut} />}
-                        {bagian === 'battle' && <TabBattle data={data as DataBattle} />}
                         {bagian === 'gamifikasi' && <TabGamifikasi data={data as DataGamifikasi} />}
                         {bagian === 'operasional' && <TabOperasional data={data as DataOperasional} />}
                     </>

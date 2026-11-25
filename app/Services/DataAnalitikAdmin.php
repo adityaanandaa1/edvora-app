@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\DB;
  */
 class DataAnalitikAdmin
 {
-    public const BAGIAN = ['belajar', 'tryout', 'battle', 'gamifikasi', 'operasional'];
+    public const BAGIAN = ['belajar', 'tryout', 'gamifikasi', 'operasional'];
 
     // Semua tab (kecuali daftar Try Out) melihat aktivitas sekian hari terakhir.
     public const HARI = 30;
@@ -33,9 +33,6 @@ class DataAnalitikAdmin
     // Subtes Try Out dianggap "memakai hampir seluruh waktu" bila durasinya ≥ porsi ini dari jatah waktunya.
     private const PORSI_WAKTU_HABIS = 0.95;
 
-    // Battle berstatus waiting lebih lama dari ini dianggap tertahan (tidak menemukan lawan).
-    private const MENIT_TERTAHAN = 30;
-
     /** @return array<string, mixed> */
     public function ambil(string $bagian, ?string $tryOutId = null): array
     {
@@ -46,7 +43,6 @@ class DataAnalitikAdmin
             $data = match ($bagian) {
                 'belajar' => $this->belajar($sekarang),
                 'tryout' => $this->tryOut($sekarang, $tryOutId),
-                'battle' => $this->battle($sekarang),
                 'gamifikasi' => $this->gamifikasi($sekarang),
                 'operasional' => $this->operasional($sekarang),
             };
@@ -266,94 +262,6 @@ class DataAnalitikAdmin
             'histogram' => AnalitikLanjutan::histogram($skor),
             'perSubtes' => $perSubtes,
             'peringkat' => $peringkat,
-        ];
-    }
-
-    // ---------------------------------------------------------------- Battle
-
-    /** @return array<string, mixed> */
-    private function battle(CarbonImmutable $sekarang): array
-    {
-        $dari = $this->dari($sekarang);
-        $batas = $dari->toIso8601String();
-
-        $perMode = [];
-        foreach (DB::select(<<<'SQL'
-            select mode::text as mode,
-                   count(*) as total,
-                   count(*) filter (where status = 'finished') as selesai,
-                   count(*) filter (where status = 'cancelled') as batal,
-                   count(*) filter (where status = 'waiting') as menunggu,
-                   count(*) filter (where status = 'ongoing') as berjalan
-            from battle
-            where created_at >= ?
-            group by 1
-            SQL, [$batas]) as $b) {
-            $perMode[$b->mode] = [
-                'mode' => $b->mode,
-                'total' => (int) $b->total,
-                'selesai' => (int) $b->selesai,
-                'batal' => (int) $b->batal,
-                'menunggu' => (int) $b->menunggu,
-                'berjalan' => (int) $b->berjalan,
-                'rataPeserta' => null,
-            ];
-        }
-
-        foreach (DB::select(<<<'SQL'
-            select b.mode::text as mode, count(distinct b.id) as battle, count(bp.id) as peserta
-            from battle b
-            left join battle_peserta bp on bp.battle_id = b.id
-            where b.status = 'finished' and b.created_at >= ?
-            group by 1
-            SQL, [$batas]) as $b) {
-            if (isset($perMode[$b->mode]) && (int) $b->battle > 0) {
-                $perMode[$b->mode]['rataPeserta'] = round((int) $b->peserta / (int) $b->battle, 1);
-            }
-        }
-
-        $jawab = DB::selectOne(<<<'SQL'
-            select count(*) as jawaban,
-                   count(*) filter (where is_correct) as benar,
-                   percentile_cont(0.5) within group (order by waktu_jawab_ms) as median_ms
-            from battle_jawaban
-            where answered_at >= ?
-            SQL, [$batas]);
-
-        $latihan = DB::selectOne(<<<'SQL'
-            select count(*) as jawaban, count(*) filter (where j.is_correct) as benar
-            from jawaban_pengerjaan j
-            join pengerjaan p on p.id = j.pengerjaan_id
-            where p.tipe = 'latihan_bebas' and j.waktu_menjawab >= ?
-            SQL, [$batas]);
-
-        $tertahan = DB::table('battle')
-            ->where('status', 'waiting')
-            ->where('created_at', '<', $sekarang->subMinutes(self::MENIT_TERTAHAN)->toIso8601String())
-            ->count();
-
-        return [
-            'perMode' => array_values($perMode),
-            'tertahan' => $tertahan,
-            'menitTertahan' => self::MENIT_TERTAHAN,
-            'jawaban' => (int) $jawab->jawaban,
-            'akurasiBattle' => AnalitikPengguna::persen((int) $jawab->benar, (int) $jawab->jawaban),
-            'akurasiLatihan' => AnalitikPengguna::persen((int) $latihan->benar, (int) $latihan->jawaban),
-            'medianDetik' => $jawab->median_ms === null ? null : round((float) $jawab->median_ms / 1000, 1),
-            'perSubtes' => array_map(fn ($b) => ['label' => $b->kode, 'sub' => $b->nama, 'jumlah' => (int) $b->jumlah], DB::select(<<<'SQL'
-                select s.kode_subtes as kode, s.nama_subtes as nama, count(*) as jumlah
-                from battle b
-                join subtes s on s.id = b.subtes_id
-                where b.created_at >= ?
-                group by s.id, s.kode_subtes, s.nama_subtes
-                order by jumlah desc
-                SQL, [$batas])),
-            'harian' => AnalitikLanjutan::deret([
-                'dibuat' => $this->perHari("select (created_at at time zone 'Asia/Jakarta')::date as hari, count(*) as jumlah
-                    from battle where created_at >= ? group by 1", [$batas]),
-                'selesai' => $this->perHari("select (ended_at at time zone 'Asia/Jakarta')::date as hari, count(*) as jumlah
-                    from battle where status = 'finished' and ended_at >= ? group by 1", [$batas]),
-            ], $dari, $sekarang->startOfDay()),
         ];
     }
 
