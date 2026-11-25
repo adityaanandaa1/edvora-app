@@ -78,6 +78,16 @@ const MENU_ADMIN: MenuSidebar[] = [
         ),
     },
     {
+        label: 'Analitik',
+        rute: 'admin.analitik',
+        ikon: (
+            <svg className={kelasIkonMenu} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24">
+                <path d="M3 3v18h18" />
+                <path d="M7 15l4-4 3 3 6-6" />
+            </svg>
+        ),
+    },
+    {
         label: 'Kelola User',
         rute: 'admin.user.index',
         aktifUntuk: 'admin.user.*',
